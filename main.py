@@ -6,9 +6,9 @@ import requests
 from flask import Flask
 
 # --- Configuration ---
-TWITCH_CLIENT_ID = "xq8rd1yddpazvezvjabfp2q06cj15m"
-TWITCH_CLIENT_SECRET = "anj2i4geqtg2ghl7ce8w3qpeh14q56"
-REDEPLOY_URL = "https://api.render.com/deploy/srv-d3ln5iu3jp1c73fe5hdg?key=20GRZ5IYsRM"
+TWITCH_CLIENT_ID = os.environ.get("TWITCH_CLIENT_ID", "<your_client_id>")
+TWITCH_CLIENT_SECRET = os.environ.get("TWITCH_CLIENT_SECRET", "<your_client_secret>")
+REDEPLOY_URL = os.environ.get("REDEPLOY_URL", "<your_render_redeploy_webhook>")
 STREAMERS = ["GranaDyy", "Shengar", "jxliano"]  # your target streamers
 CHECK_INTERVAL = 180  # seconds (3 minutes)
 
@@ -95,3 +95,4 @@ if __name__ == "__main__":
 
     # Start Flask web server
     run_flask()
+
