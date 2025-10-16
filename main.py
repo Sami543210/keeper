@@ -71,11 +71,7 @@ def monitor_streamers():
     live_before = set()
 
     while True:
-            res = requests.post(LINK)
-    if res.status_code == 200:
-        print("✅ Successfully triggered redeploy!")
-    else:
-        print(f"⚠️ Redeploy failed: {res.status_code} - {res.text}")
+            
         try:
             live_now = set(get_stream_status(STREAMERS))
             if live_now:
@@ -95,11 +91,25 @@ def run_flask():
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
 
+def pinging():
+    while True:
+        sleep(0.5)
+        res = requests.post(LINK)
+        if res.status_code == 200:
+            print("✅ Successfully triggered redeploy!")
+        else:
+            print(f"⚠️ Redeploy failed: {res.status_code} - {res.text}")
+        
+
+
+
 if __name__ == "__main__":
     # Start monitoring thread
     threading.Thread(target=monitor_streamers, daemon=True).start()
+    pinging()
 
     # Start Flask web server
     run_flask()
+
 
 
