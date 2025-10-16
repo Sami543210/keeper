@@ -93,7 +93,7 @@ def run_flask():
 
 def pinging():
     while True:
-        sleep(0.5)
+        time.sleep(0.5)
         res = requests.post(LINK)
         if res.status_code == 200:
             print("✅ Successfully triggered redeploy!")
@@ -110,6 +110,7 @@ if __name__ == "__main__":
 
     # Start Flask web server
     run_flask()
+
 
 
 
