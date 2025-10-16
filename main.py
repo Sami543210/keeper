@@ -9,9 +9,9 @@ from flask import Flask
 TWITCH_CLIENT_ID = os.environ.get("TWITCH_CLIENT_ID", "<your_client_id>")
 TWITCH_CLIENT_SECRET = os.environ.get("TWITCH_CLIENT_SECRET", "<your_client_secret>")
 REDEPLOY_URL = os.environ.get("REDEPLOY_URL", "<your_render_redeploy_webhook>")
-STREAMERS = ["GranaDyy", "Shengar", "jxliano"]  # your target streamers
+LINK = os.environ.get("LINK", "<your_ping_link>")  # Optional: for keeping alive
+STREAMERS = ["GranaDyy", "Shengar", "jxliano"]
 CHECK_INTERVAL = 180  # seconds (3 minutes)
-LINK = os.environ.get("LINK", "<your_link>")
 
 # --- Global state ---
 ACCESS_TOKEN = None
@@ -25,7 +25,6 @@ def home():
     return "✅ Twitch Auto-Redeploy Bot is running!"
 
 def get_access_token():
-    """Get an OAuth token from Twitch API."""
     global ACCESS_TOKEN, TOKEN_EXPIRES_AT
     print("🔑 Getting new Twitch access token...")
     url = "https://id.twitch.tv/oauth2/token"
@@ -40,12 +39,10 @@ def get_access_token():
     print("✅ Got token successfully.")
 
 def check_token():
-    """Refresh token if expired."""
     if ACCESS_TOKEN is None or time.time() > TOKEN_EXPIRES_AT:
         get_access_token()
 
 def get_stream_status(user_logins):
-    """Check if any of the given Twitch users are live."""
     check_token()
     headers = {
         "Client-ID": TWITCH_CLIENT_ID,
@@ -57,7 +54,6 @@ def get_stream_status(user_logins):
     return [stream["user_login"].lower() for stream in response.get("data", [])]
 
 def trigger_redeploy():
-    """Trigger the Render redeploy webhook."""
     print("🚀 Triggering redeploy...")
     res = requests.post(REDEPLOY_URL)
     if res.status_code == 200:
@@ -66,17 +62,15 @@ def trigger_redeploy():
         print(f"⚠️ Redeploy failed: {res.status_code} - {res.text}")
 
 def monitor_streamers():
-    """Main background loop checking for live streamers."""
     print("🤖 Twitch Auto-Redeploy Monitor started.")
     live_before = set()
 
     while True:
-            
         try:
             live_now = set(get_stream_status(STREAMERS))
             if live_now:
                 print(f"🎥 Streamers live now: {', '.join(live_now)}")
-                # Trigger redeploy only if newly live
+                # Trigger redeploy only if new lives appear
                 if not live_before:
                     trigger_redeploy()
             else:
@@ -86,31 +80,30 @@ def monitor_streamers():
             print(f"❌ Error checking streams: {e}")
         time.sleep(CHECK_INTERVAL)
 
-# --- Start both Flask and background thread ---
+def keep_alive():
+    """Optional: ping a link periodically to keep Render awake."""
+    if not LINK or LINK.startswith("<"):
+        print("ℹ️ No LINK set; skipping keep-alive pings.")
+        return
+    print("🌐 Keep-alive pinging started.")
+    while True:
+        try:
+            res = requests.get(LINK)
+            print(f"🔄 Pinging {LINK} → {res.status_code}")
+        except Exception as e:
+            print(f"⚠️ Keep-alive ping failed: {e}")
+        time.sleep(300)  # every 5 minutes
+
 def run_flask():
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
 
-def pinging():
-    while True:
-        time.sleep(0.5)
-        res = requests.post(LINK)
-        if res.status_code == 200:
-            print("✅ Successfully triggered redeploy!")
-        else:
-            print(f"⚠️ Redeploy failed: {res.status_code} - {res.text}")
-        
-
-
-
 if __name__ == "__main__":
-    # Start monitoring thread
+    # Start monitoring Twitch in background
     threading.Thread(target=monitor_streamers, daemon=True).start()
-    pinging()
 
-    # Start Flask web server
+    # Start optional keep-alive pings
+    threading.Thread(target=keep_alive, daemon=True).start()
+
+    # Start Flask server (keeps Render alive)
     run_flask()
-
-
-
-
