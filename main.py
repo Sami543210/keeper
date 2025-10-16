@@ -10,6 +10,7 @@ TWITCH_CLIENT_ID = os.environ.get("TWITCH_CLIENT_ID", "<your_client_id>")
 TWITCH_CLIENT_SECRET = os.environ.get("TWITCH_CLIENT_SECRET", "<your_client_secret>")
 REDEPLOY_URL = os.environ.get("REDEPLOY_URL", "<your_render_redeploy_webhook>")
 LINK = os.environ.get("LINK", "<your_ping_link>")  # Optional: for keeping alive
+LINKTWO = os.environ.get("LINKTWO", "<your_ping_linktwo>")  # Optional: for keeping alive
 STREAMERS = ["GranaDyy", "Shengar", "jxliano"]
 CHECK_INTERVAL = 180  # seconds (3 minutes)
 
@@ -89,6 +90,7 @@ def keep_alive():
     while True:
         try:
             res = requests.get(LINK)
+            res = requests.get(LINKTWO)
             print(f"🔄 Pinging {LINK} → {res.status_code}")
         except Exception as e:
             print(f"⚠️ Keep-alive ping failed: {e}")
@@ -107,3 +109,4 @@ if __name__ == "__main__":
 
     # Start Flask server (keeps Render alive)
     run_flask()
+
