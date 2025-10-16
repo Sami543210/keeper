@@ -94,7 +94,7 @@ def keep_alive():
             print(f"🔄 Pinging {LINK} → {res.status_code}")
         except Exception as e:
             print(f"⚠️ Keep-alive ping failed: {e}")
-        time.sleep(300)  # every 5 minutes
+        time.sleep(30)  # every 5 minutes
 
 def run_flask():
     port = int(os.environ.get("PORT", 5000))
@@ -109,4 +109,5 @@ if __name__ == "__main__":
 
     # Start Flask server (keeps Render alive)
     run_flask()
+
 
