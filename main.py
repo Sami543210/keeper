@@ -11,6 +11,7 @@ TWITCH_CLIENT_SECRET = os.environ.get("TWITCH_CLIENT_SECRET", "<your_client_secr
 REDEPLOY_URL = os.environ.get("REDEPLOY_URL", "<your_render_redeploy_webhook>")
 STREAMERS = ["GranaDyy", "Shengar", "jxliano"]  # your target streamers
 CHECK_INTERVAL = 180  # seconds (3 minutes)
+LINK = os.environ.get("LINK", "<your_link>")
 
 # --- Global state ---
 ACCESS_TOKEN = None
@@ -70,6 +71,11 @@ def monitor_streamers():
     live_before = set()
 
     while True:
+            res = requests.post(LINK)
+    if res.status_code == 200:
+        print("✅ Successfully triggered redeploy!")
+    else:
+        print(f"⚠️ Redeploy failed: {res.status_code} - {res.text}")
         try:
             live_now = set(get_stream_status(STREAMERS))
             if live_now:
@@ -95,4 +101,5 @@ if __name__ == "__main__":
 
     # Start Flask web server
     run_flask()
+
 
